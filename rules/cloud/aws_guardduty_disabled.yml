@@ -1,0 +1,27 @@
+title: AWS GuardDuty Disabled
+id: 6ebd954a-a7ed-45fc-86eb-d2ee4e90e762
+status: experimental
+description: >
+  Detects disabling or deletion of GuardDuty detectors, a defense-evasion step
+  to blind threat detection in the account.
+references:
+  - https://attack.mitre.org/techniques/T1562/008/
+author: Bvlik
+date: 2026/06/21
+logsource:
+  product: aws
+  service: cloudtrail
+detection:
+  selection:
+    eventSource: 'guardduty.amazonaws.com'
+    eventName:
+      - 'DeleteDetector'
+      - 'DisassociateFromMasterAccount'
+      - 'StopMonitoringMembers'
+  condition: selection
+falsepositives:
+  - Planned decommissioning of GuardDuty (should be change-managed)
+level: high
+tags:
+  - attack.defense-evasion
+  - attack.t1562.008

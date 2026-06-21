@@ -1,0 +1,27 @@
+title: AWS IAM Backdoor User or Access Key
+id: 68e06af4-471f-40c6-bf80-ce8e1efb6d90
+status: experimental
+description: >
+  Detects creation of new IAM users or access keys, which adversaries use to
+  establish persistent, credentialed access to an account.
+references:
+  - https://attack.mitre.org/techniques/T1136/003/
+author: Bvlik
+date: 2026/06/21
+logsource:
+  product: aws
+  service: cloudtrail
+detection:
+  selection:
+    eventSource: 'iam.amazonaws.com'
+    eventName:
+      - 'CreateUser'
+      - 'CreateAccessKey'
+      - 'CreateLoginProfile'
+  condition: selection
+falsepositives:
+  - Legitimate user provisioning by administrators or IaC pipelines
+level: medium
+tags:
+  - attack.persistence
+  - attack.t1136.003
