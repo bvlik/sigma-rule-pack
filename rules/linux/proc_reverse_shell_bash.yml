@@ -1,0 +1,29 @@
+title: Bash /dev/tcp Reverse Shell
+id: 9283de04-b2a2-4ae2-b770-e2d441459483
+status: experimental
+description: >
+  Detects the classic bash reverse shell that redirects an interactive shell to a
+  TCP socket via the /dev/tcp pseudo-device.
+references:
+  - https://attack.mitre.org/techniques/T1059/004/
+author: Bvlik
+date: 2026/06/21
+logsource:
+  product: linux
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - '/dev/tcp/'
+      - '/dev/udp/'
+  selection_interactive:
+    CommandLine|contains:
+      - 'bash -i'
+      - 'sh -i'
+  condition: all of selection*
+falsepositives:
+  - Health-check or monitoring scripts probing TCP ports via /dev/tcp
+level: high
+tags:
+  - attack.execution
+  - attack.t1059.004

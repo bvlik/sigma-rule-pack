@@ -1,0 +1,24 @@
+title: SSH Password Brute Force
+id: 503060bd-bfd9-4c14-92cc-8c0276c52f3d
+status: experimental
+description: >
+  Detects a high rate of failed SSH password authentications from a single source
+  address, indicating a brute-force or password-spraying attempt.
+references:
+  - https://attack.mitre.org/techniques/T1110/
+author: Bvlik
+date: 2026/06/21
+logsource:
+  product: linux
+  service: sshd
+detection:
+  selection:
+    - 'Failed password for'
+    - 'Failed password for invalid user'
+  condition: selection | count() by src_ip > 10
+falsepositives:
+  - Misconfigured automation or backup jobs repeatedly using stale credentials
+level: medium
+tags:
+  - attack.credential-access
+  - attack.t1110
