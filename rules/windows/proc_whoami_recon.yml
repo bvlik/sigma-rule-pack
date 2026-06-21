@@ -1,0 +1,23 @@
+title: Whoami Account Discovery
+id: b0dfc8d2-826a-4cb4-83f3-1cb0c9cb3ffe
+status: experimental
+description: >
+  Detects execution of whoami.exe, frequently run by operators shortly after
+  gaining access to enumerate the current user and its privileges.
+references:
+  - https://attack.mitre.org/techniques/T1033/
+author: Bvlik
+date: 2026/06/21
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    Image|endswith: '\whoami.exe'
+  condition: selection
+falsepositives:
+  - Administrators and login scripts that legitimately call whoami
+level: low
+tags:
+  - attack.discovery
+  - attack.t1033
