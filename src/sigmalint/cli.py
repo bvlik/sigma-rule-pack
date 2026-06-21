@@ -12,6 +12,7 @@ from collections import Counter
 
 import yaml
 
+from .convert import SUPPORTED_TARGETS, ConvertError, convert_rule
 from .validate import validate_rules
 
 
@@ -27,6 +28,23 @@ def _print_stats(loaded: list[tuple[str, object]]) -> None:
     print(f"Rules: {len(loaded)}")
     print("By level:    " + ", ".join(f"{k}={v}" for k, v in sorted(levels.items())))
     print("By platform: " + ", ".join(f"{k}={v}" for k, v in sorted(platforms.items())))
+
+
+def _convert(loaded: list[tuple[str, object]], target: str) -> int:
+    failures = 0
+    for name, rule in loaded:
+        title = rule.get("title") if isinstance(rule, dict) else None
+        print(f"# {title or name}")
+        try:
+            print(convert_rule(rule, target))
+        except ConvertError as exc:
+            print(f"[REJECT] cannot convert {name}: {exc}", file=sys.stderr)
+            failures += 1
+        print()
+    if failures:
+        print(f"{failures} rule(s) could not be converted.", file=sys.stderr)
+        return 1
+    return 0
 
 
 def _iter_rule_files(paths: list[str]):
@@ -54,6 +72,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("paths", nargs="*", default=["rules"], help="Rule files or directories")
     parser.add_argument("--stats", action="store_true", help="Print rule counts by level/platform and exit.")
+    parser.add_argument(
+        "--convert",
+        choices=SUPPORTED_TARGETS,
+        metavar="TARGET",
+        help=f"Convert rules to a backend query and exit (one of: {', '.join(SUPPORTED_TARGETS)}).",
+    )
     args = parser.parse_args(argv)
     paths = args.paths or ["rules"]
 
@@ -65,6 +89,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.stats:
         _print_stats(loaded)
         return 0
+
+    if args.convert:
+        return _convert(loaded, args.convert)
 
     results = validate_rules([(n, r) for n, r in loaded])
     total = len(loaded)
