@@ -16,6 +16,11 @@ VALID_STATUS = {"stable", "test", "experimental", "deprecated", "unsupported"}
 _CONDITION_KEYWORDS = {"and", "or", "not", "of", "them", "all", "1", "any"}
 _IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 
+# Pack quality gates (stricter than the bare Sigma spec, on purpose).
+_DATE = re.compile(r"^\d{4}/\d{2}/\d{2}$")
+# An ATT&CK technique tag, e.g. attack.t1003 or attack.t1003.001
+_ATTACK_TECHNIQUE = re.compile(r"^attack\.t\d{4}(\.\d{3})?$")
+
 
 def _is_uuid(value: object) -> bool:
     try:
@@ -81,6 +86,30 @@ def validate_rule(rule: object) -> list[str]:
     elif not any(k in logsource for k in ("product", "service", "category")):
         errors.append("'logsource' must set at least one of product/service/category")
 
+    # --- pack quality gates -------------------------------------------------
+    if not (isinstance(rule.get("description"), str) and rule["description"].strip()):
+        errors.append("missing 'description'")
+
+    if not (isinstance(rule.get("author"), str) and rule["author"].strip()):
+        errors.append("missing 'author'")
+
+    refs = rule.get("references")
+    if not (isinstance(refs, list) and refs):
+        errors.append("missing 'references' (at least one source URL)")
+
+    date = rule.get("date")
+    if date is not None and not _DATE.match(str(date)):
+        errors.append(f"invalid 'date' format {date!r} (expected YYYY/MM/DD)")
+
+    tags = rule.get("tags")
+    if tags is not None:
+        if not isinstance(tags, list):
+            errors.append("'tags' must be a list")
+        else:
+            malformed = [t for t in tags if str(t).startswith("attack.t") and not _ATTACK_TECHNIQUE.match(str(t))]
+            for t in malformed:
+                errors.append(f"malformed ATT&CK technique tag '{t}' (expected attack.tNNNN[.NNN])")
+
     detection = rule.get("detection")
     if not isinstance(detection, dict):
         errors.append("missing 'detection' block")
@@ -105,10 +134,12 @@ def validate_rules(rules: list[tuple[str, object]]) -> dict[str, list[str]]:
     """Validate many rules and also flag duplicate IDs across the pack.
 
     ``rules`` is a list of ``(source_name, parsed_rule)`` tuples. The result maps each
-    source name to its list of errors (sources with no errors are omitted).
+    source name to its list of errors (sources with no errors are omitted). Duplicate
+    ids *and* duplicate titles across the pack are reported.
     """
     results: dict[str, list[str]] = {}
     seen_ids: dict[str, str] = {}
+    seen_titles: dict[str, str] = {}
     for name, rule in rules:
         errors = validate_rule(rule)
         if isinstance(rule, dict):
@@ -119,6 +150,13 @@ def validate_rules(rules: list[tuple[str, object]]) -> dict[str, list[str]]:
                     errors = errors + [f"duplicate id {rid} (also in {seen_ids[rid]})"]
                 else:
                     seen_ids[rid] = name
+            title = rule.get("title")
+            if isinstance(title, str) and title.strip():
+                key = title.strip().lower()
+                if key in seen_titles:
+                    errors = errors + [f"duplicate title {title!r} (also in {seen_titles[key]})"]
+                else:
+                    seen_titles[key] = name
         if errors:
             results[name] = errors
     return results
