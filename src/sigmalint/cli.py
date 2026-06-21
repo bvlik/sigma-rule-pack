@@ -8,9 +8,25 @@ import argparse
 import sys
 from pathlib import Path
 
+from collections import Counter
+
 import yaml
 
 from .validate import validate_rules
+
+
+def _print_stats(loaded: list[tuple[str, object]]) -> None:
+    levels: Counter[str] = Counter()
+    platforms: Counter[str] = Counter()
+    for _name, rule in loaded:
+        if not isinstance(rule, dict):
+            continue
+        levels[str(rule.get("level", "unknown"))] += 1
+        ls = rule.get("logsource") or {}
+        platforms[str(ls.get("product") or ls.get("service") or "unknown")] += 1
+    print(f"Rules: {len(loaded)}")
+    print("By level:    " + ", ".join(f"{k}={v}" for k, v in sorted(levels.items())))
+    print("By platform: " + ", ".join(f"{k}={v}" for k, v in sorted(platforms.items())))
 
 
 def _iter_rule_files(paths: list[str]):
@@ -37,6 +53,7 @@ def main(argv: list[str] | None = None) -> int:
         description="Validate Sigma detection rules (structure, ids, condition references).",
     )
     parser.add_argument("paths", nargs="*", default=["rules"], help="Rule files or directories")
+    parser.add_argument("--stats", action="store_true", help="Print rule counts by level/platform and exit.")
     args = parser.parse_args(argv)
     paths = args.paths or ["rules"]
 
@@ -44,6 +61,10 @@ def main(argv: list[str] | None = None) -> int:
     if not loaded:
         print("[REJECT] no rule files found", file=sys.stderr)
         return 1
+
+    if args.stats:
+        _print_stats(loaded)
+        return 0
 
     results = validate_rules([(n, r) for n, r in loaded])
     total = len(loaded)
