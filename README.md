@@ -74,17 +74,46 @@ Each rule is checked for:
 
 Exit code is non-zero on any error, so it drops straight into a pipeline.
 
+## Backend conversion
+
+`sigma-lint` ships a small, dependency-free backend that turns a rule's `detection`
+block into a query for your SIEM — no `sigma` CLI or `pySigma` install required:
+
+```bash
+# Splunk SPL
+python -m sigmalint --convert splunk rules/
+
+# Elastic (Lucene query string)
+python -m sigmalint --convert elastic rules/cloud/aws_iam_backdoor_user.yml
+```
+
+```spl
+# AWS IAM Backdoor User or Access Key
+search (eventSource="iam.amazonaws.com" AND (eventName="CreateUser" OR eventName="CreateAccessKey" OR eventName="CreateLoginProfile"))
+
+# SSH Password Brute Force
+search ("Failed password for" OR ...) | stats count by src_ip | where count > 10
+```
+
+Supported: `contains` / `startswith` / `endswith` / equality modifiers (and the
+`|all` list-AND modifier), `and`/`or`/`not`, parentheses, the `all of` / `1 of` /
+`any of` quantifiers, and `count() by … > N` aggregations (mapped to `stats … | where`
+for Splunk). Anything the backend can't express faithfully **fails loudly** rather than
+emitting a silently-wrong query — and the CI converts the whole pack to both backends as a
+self-check.
+
 ## Layout
 
 ```
 rules/<platform>/<rule>.yml   the detections
 src/sigmalint/validate.py     pure validation logic (unit-tested)
+src/sigmalint/convert.py      pure Sigma -> Splunk/Elastic backend (unit-tested)
 src/sigmalint/cli.py          YAML loading + reporting + exit code
 ```
 
 ## Roadmap
 - [x] Pack quality gates (description/author/references/date/ATT&CK tags)
 - [x] Duplicate id **and** title detection, `--stats` summary
-- [ ] Backend conversion examples (Splunk SPL / Elastic) via `sigma` CLI
+- [x] Backend conversion (Splunk SPL / Elastic Lucene), no external deps
 - [ ] More cloud coverage (Azure sign-in logs, GCP audit logs)
 - [ ] `field`/modifier sanity checks per logsource

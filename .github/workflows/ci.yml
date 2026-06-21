@@ -26,3 +26,7 @@ jobs:
         run: PYTHONPATH=src pytest -q
       - name: Validate Sigma rules
         run: PYTHONPATH=src python -m sigmalint rules/
+      - name: Convert pack to Splunk (self-check)
+        run: PYTHONPATH=src python -m sigmalint --convert splunk rules/ > /dev/null
+      - name: Convert pack to Elastic (self-check)
+        run: PYTHONPATH=src python -m sigmalint --convert elastic rules/ > /dev/null
