@@ -1,0 +1,31 @@
+title: Remote Script Piped to Shell
+id: b2410f7c-6871-4618-ba45-83d97054f88e
+status: experimental
+description: >
+  Detects the download-and-execute pattern where curl or wget output is piped
+  straight into a shell, commonly used by droppers and crypto-miners.
+references:
+  - https://attack.mitre.org/techniques/T1059/004/
+author: Bvlik
+date: 2026/06/21
+logsource:
+  product: linux
+  category: process_creation
+detection:
+  selection_dl:
+    CommandLine|contains:
+      - 'curl'
+      - 'wget'
+  selection_pipe:
+    CommandLine|contains:
+      - '| bash'
+      - '| sh'
+      - '|bash'
+      - '|sh'
+  condition: all of selection_*
+falsepositives:
+  - Some official software install scripts use this pattern
+level: high
+tags:
+  - attack.execution
+  - attack.t1059.004

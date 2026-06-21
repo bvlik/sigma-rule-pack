@@ -1,0 +1,29 @@
+title: Cron Job Persistence
+id: 59091af3-d170-46d5-8356-5f56bed6e928
+status: experimental
+description: >
+  Detects writes to cron directories or use of crontab to install scheduled
+  tasks, a common Linux persistence technique.
+references:
+  - https://attack.mitre.org/techniques/T1053/003/
+author: Bvlik
+date: 2026/06/21
+logsource:
+  product: linux
+  category: process_creation
+detection:
+  selection_paths:
+    CommandLine|contains:
+      - '/etc/cron.d/'
+      - '/etc/cron.daily/'
+      - '/var/spool/cron/'
+  selection_crontab:
+    Image|endswith: '/crontab'
+    CommandLine|contains: ' -e'
+  condition: 1 of selection_*
+falsepositives:
+  - Configuration management deploying scheduled jobs
+level: medium
+tags:
+  - attack.persistence
+  - attack.t1053.003

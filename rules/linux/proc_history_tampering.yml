@@ -1,0 +1,28 @@
+title: Shell History Tampering
+id: 4f1cec52-1c0e-4b77-93d6-a63b5165f428
+status: experimental
+description: >
+  Detects attempts to disable or clear shell history (HISTFILE manipulation,
+  history -c, truncating .bash_history), an anti-forensics technique.
+references:
+  - https://attack.mitre.org/techniques/T1070/003/
+author: Bvlik
+date: 2026/06/21
+logsource:
+  product: linux
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'unset HISTFILE'
+      - 'export HISTFILE=/dev/null'
+      - 'history -c'
+      - 'rm -f ~/.bash_history'
+      - '> ~/.bash_history'
+  condition: selection
+falsepositives:
+  - Rare legitimate shell housekeeping
+level: medium
+tags:
+  - attack.defense-evasion
+  - attack.t1070.003
