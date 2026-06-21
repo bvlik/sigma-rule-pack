@@ -1,0 +1,27 @@
+title: Remote Process Execution via WMIC
+id: 03f36a8b-678b-4e11-bc83-5fe3f1072b3a
+status: experimental
+description: >
+  Detects wmic.exe invoking process creation against a remote node, a classic
+  lateral-movement technique that runs commands on another host over WMI.
+references:
+  - https://attack.mitre.org/techniques/T1047/
+author: Bvlik
+date: 2026/06/21
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection_img:
+    Image|endswith: '\wmic.exe'
+  selection_remote:
+    CommandLine|contains|all:
+      - 'process call create'
+      - '/node:'
+  condition: all of selection_*
+falsepositives:
+  - Administrative tooling that legitimately runs WMI commands on remote hosts
+level: high
+tags:
+  - attack.execution
+  - attack.t1047

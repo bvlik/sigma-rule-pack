@@ -1,0 +1,31 @@
+title: Certutil Used to Download a File
+id: a818b76d-238a-43f6-8934-956a5bf10934
+status: experimental
+description: >
+  Detects certutil.exe used as a download cradle (LOLBin), fetching a remote
+  payload via its URL cache options - a common way to pull tooling onto a host
+  while blending in with a signed Microsoft binary.
+references:
+  - https://attack.mitre.org/techniques/T1105/
+  - https://lolbas-project.github.io/lolbas/Binaries/Certutil/
+author: Bvlik
+date: 2026/06/21
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection_img:
+    Image|endswith: '\certutil.exe'
+  selection_dl:
+    CommandLine|contains:
+      - 'urlcache'
+      - 'verifyctl'
+      - 'http://'
+      - 'https://'
+  condition: all of selection_*
+falsepositives:
+  - Certutil used legitimately for certificate management (rarely with URLs)
+level: high
+tags:
+  - attack.command-and-control
+  - attack.t1105

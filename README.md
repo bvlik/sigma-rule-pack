@@ -26,7 +26,7 @@ hand-written rules with a linter so the pack stays valid on every commit — the
 
 ## Rules
 
-**16 rules** across Windows, Linux and AWS CloudTrail, every one mapped to MITRE ATT&CK.
+**25 rules** across Windows, Linux and AWS CloudTrail, every one mapped to MITRE ATT&CK.
 
 | Platform | Rule | ATT&CK | Level |
 |----------|------|--------|-------|
@@ -35,9 +35,16 @@ hand-written rules with a linter so the pack stays valid on every commit — the
 | Windows | Registry Run key persistence | T1547.001 | Medium |
 | Windows | Volume Shadow Copy deletion | T1490 | High |
 | Windows | PsExec service installation | T1569.002 | Medium |
+| Windows | Scheduled task creation via `schtasks` | T1053.005 | Medium |
+| Windows | Certutil used to download a file | T1105 | High |
+| Windows | Remote process execution via WMIC | T1047 | High |
+| Windows | Microsoft Defender tampering | T1562.001 | High |
 | Windows | `whoami` account discovery | T1033 | Low |
 | Linux | Bash `/dev/tcp` reverse shell | T1059.004 | High |
 | Linux | Remote script piped to shell (`curl|bash`) | T1059.004 | High |
+| Linux | Base64-decoded command piped to shell | T1140 | High |
+| Linux | SSH `authorized_keys` modification | T1098.004 | Medium |
+| Linux | Security service stopped/disabled | T1562.001 | Medium |
 | Linux | SSH password brute force | T1110 | Medium |
 | Linux | Cron job persistence | T1053.003 | Medium |
 | Linux | Shell history tampering | T1070.003 | Medium |
@@ -45,6 +52,8 @@ hand-written rules with a linter so the pack stays valid on every commit — the
 | AWS | GuardDuty disabled | T1562.008 | High |
 | AWS | Root account console login | T1078.004 | High |
 | AWS | IAM backdoor user / access key | T1136.003 | Medium |
+| AWS | MFA device deactivated / deleted | T1556 | High |
+| AWS | S3 bucket exposed publicly | T1567 | High |
 | AWS | Security group opened to `0.0.0.0/0` | T1562.007 | Medium |
 
 ```bash

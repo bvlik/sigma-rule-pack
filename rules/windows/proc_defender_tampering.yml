@@ -1,0 +1,29 @@
+title: Microsoft Defender Tampering
+id: a3e703c0-b173-4f32-acb9-25501431714c
+status: experimental
+description: >
+  Detects attempts to disable Microsoft Defender real-time protection or stop
+  the WinDefend service from the command line, a defense-evasion step taken
+  before deploying further tooling.
+references:
+  - https://attack.mitre.org/techniques/T1562/001/
+author: Bvlik
+date: 2026/06/21
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains:
+      - 'DisableRealtimeMonitoring $true'
+      - 'Set-MpPreference -DisableRealtimeMonitoring'
+      - 'Add-MpPreference -ExclusionPath'
+      - 'sc stop WinDefend'
+      - 'sc config WinDefend'
+  condition: selection
+falsepositives:
+  - Administrators legitimately configuring Defender exclusions
+level: high
+tags:
+  - attack.defense-evasion
+  - attack.t1562.001

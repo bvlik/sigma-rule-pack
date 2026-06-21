@@ -1,0 +1,29 @@
+title: AWS S3 Bucket Exposed Publicly
+id: a0226d4b-ce6c-48d6-b6bc-92bab1756acb
+status: experimental
+description: >
+  Detects S3 API calls that can expose a bucket to the public - changing the
+  bucket ACL or policy, or removing the public-access block. Adversaries use
+  this to stage exfiltration or leak data from a compromised account.
+references:
+  - https://attack.mitre.org/techniques/T1567/
+author: Bvlik
+date: 2026/06/21
+logsource:
+  product: aws
+  service: cloudtrail
+detection:
+  selection:
+    eventSource: 's3.amazonaws.com'
+    eventName:
+      - 'PutBucketAcl'
+      - 'PutBucketPolicy'
+      - 'DeleteBucketPublicAccessBlock'
+      - 'PutAccountPublicAccessBlock'
+  condition: selection
+falsepositives:
+  - Intentional hosting of public assets (static websites) by administrators
+level: high
+tags:
+  - attack.exfiltration
+  - attack.t1567

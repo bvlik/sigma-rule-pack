@@ -1,0 +1,33 @@
+title: Base64-Decoded Command Piped to Shell
+id: 58b38c19-b766-45d5-babf-718674638d2e
+status: experimental
+description: >
+  Detects a base64-decoded blob piped straight into a shell, a common
+  obfuscation used by droppers and reverse-shell one-liners to hide the real
+  command from simple log inspection.
+references:
+  - https://attack.mitre.org/techniques/T1140/
+author: Bvlik
+date: 2026/06/21
+logsource:
+  product: linux
+  category: process_creation
+detection:
+  selection_decode:
+    CommandLine|contains:
+      - 'base64 -d'
+      - 'base64 --decode'
+      - 'base64 -D'
+  selection_pipe:
+    CommandLine|contains:
+      - '| bash'
+      - '| sh'
+      - '|bash'
+      - '|sh'
+  condition: all of selection_*
+falsepositives:
+  - Rare legitimate install scripts that decode and run embedded payloads
+level: high
+tags:
+  - attack.defense-evasion
+  - attack.t1140

@@ -1,0 +1,33 @@
+title: Security Service Stopped or Disabled
+id: c6629a2c-0200-4767-98ee-f70d698fb707
+status: experimental
+description: >
+  Detects stopping or disabling host logging / EDR services (auditd, rsyslog,
+  falcon, osquery) via systemctl or service, a defense-evasion step to blind
+  detection before further activity.
+references:
+  - https://attack.mitre.org/techniques/T1562/001/
+author: Bvlik
+date: 2026/06/21
+logsource:
+  product: linux
+  category: process_creation
+detection:
+  selection_action:
+    CommandLine|contains:
+      - 'systemctl stop'
+      - 'systemctl disable'
+      - 'service stop'
+  selection_target:
+    CommandLine|contains:
+      - 'auditd'
+      - 'rsyslog'
+      - 'falcon-sensor'
+      - 'osqueryd'
+  condition: all of selection_*
+falsepositives:
+  - Planned maintenance windows performed by administrators
+level: medium
+tags:
+  - attack.defense-evasion
+  - attack.t1562.001

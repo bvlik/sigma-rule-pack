@@ -1,0 +1,30 @@
+title: SSH authorized_keys Modification
+id: 619f220d-9f92-428f-b5f5-1c857ba3d9fb
+status: experimental
+description: >
+  Detects writes to an SSH authorized_keys file from the command line, the way
+  adversaries plant their own public key to keep persistent, password-less
+  access to a host.
+references:
+  - https://attack.mitre.org/techniques/T1098/004/
+author: Bvlik
+date: 2026/06/21
+logsource:
+  product: linux
+  category: process_creation
+detection:
+  selection_target:
+    CommandLine|contains: 'authorized_keys'
+  selection_write:
+    CommandLine|contains:
+      - '>>'
+      - 'tee '
+      - 'curl '
+      - 'wget '
+  condition: all of selection_*
+falsepositives:
+  - Configuration management (Ansible/Puppet) provisioning authorized keys
+level: medium
+tags:
+  - attack.persistence
+  - attack.t1098.004
