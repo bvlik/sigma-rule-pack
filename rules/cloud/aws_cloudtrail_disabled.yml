@@ -1,0 +1,27 @@
+title: AWS CloudTrail Logging Disabled
+id: fa3f57f6-2d55-41b4-b8f8-375153b4a931
+status: experimental
+description: >
+  Detects attempts to disable or delete CloudTrail, a common defense-evasion step
+  to blind logging before further activity.
+references:
+  - https://attack.mitre.org/techniques/T1562/008/
+author: Bvlik
+date: 2026/06/21
+logsource:
+  product: aws
+  service: cloudtrail
+detection:
+  selection:
+    eventSource: 'cloudtrail.amazonaws.com'
+    eventName:
+      - 'StopLogging'
+      - 'DeleteTrail'
+      - 'UpdateTrail'
+  condition: selection
+falsepositives:
+  - Planned maintenance of trails by cloud administrators (should be change-managed)
+level: high
+tags:
+  - attack.defense-evasion
+  - attack.t1562.008
