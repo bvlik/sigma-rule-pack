@@ -1,0 +1,27 @@
+title: Registry Run Key Persistence
+id: 3c2f7760-dc08-4d99-8218-6ddd805972c5
+status: experimental
+description: >
+  Detects creation or modification of autorun registry keys via reg.exe, a
+  classic persistence mechanism that survives reboots.
+references:
+  - https://attack.mitre.org/techniques/T1547/001/
+author: Bvlik
+date: 2026/06/21
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection_img:
+    Image|endswith: '\reg.exe'
+  selection_cli:
+    CommandLine|contains|all:
+      - 'add'
+      - '\CurrentVersion\Run'
+  condition: all of selection_*
+falsepositives:
+  - Installers legitimately registering startup entries
+level: medium
+tags:
+  - attack.persistence
+  - attack.t1547.001
